@@ -1,4 +1,4 @@
-from src.core.connectors.bandit.classes import BanditTestResult
+from core.connectors.bandit.classes import BanditTestResult
 from mdutils import MdUtils
 from typing import Union
 
@@ -14,7 +14,7 @@ class Bandit:
             "output": [],
             # "code": []
         }
-        if len(results) > 0:
+        if results is not None and len(results) > 0:
             for test in results:
                 test_result = BanditTestResult(**test, cwd=cwd)
                 tests.append(test_result)
@@ -47,7 +47,7 @@ class Bandit:
                     file = output.url.replace("REPO_REPLACE", repo).replace("COMMIT_REPLACE", commit)
                     file_name = f"[{output.filename}]({file})"
                 else:
-                    file_name = output.filename
+                    file_name = f"`{output.filename}`"
                 md.new_line(f"**{output.issue_text}**")
                 md.new_line(f"**Severity**: `{output.issue_severity}`")
                 md.new_line(f"**Filename:** {file_name}")

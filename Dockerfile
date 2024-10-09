@@ -1,10 +1,9 @@
 # Use the official Python image as a base
 FROM python:3.9
-COPY src/socket_external_tools_runner.py /app/
-COPY src/core /app/
-COPY entrypoint.sh /app/
+COPY src/socket_external_tools_runner.py /
+COPY src/core /core
+COPY entrypoint.sh /
 ENV PATH=$PATH:/usr/local/go/bin
-WORKDIR /app
 
 # Setup Golang
 RUN curl -sfL https://go.dev/dl/go1.23.2.linux-amd64.tar.gz > go1.23.2.linux-amd64.tar.gz
@@ -18,11 +17,14 @@ RUN curl -sfL https://raw.githubusercontent.com/securego/gosec/master/install.sh
 # Install Trivy
 RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.18.3
 
-# Install Bandit and Trufflehog using pip
-RUN pip install bandit trufflehog
+#Install Trufflehog
+# Install trufflehog
+RUN curl -sSfL https://raw.githubusercontent.com/trufflesecurity/trufflehog/main/scripts/install.sh | sh -s -- -b /usr/local/bin
+
+# Install Bandit
+RUN pip install bandit
 
 # Copy the entrypoint script and make it executable
-COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 

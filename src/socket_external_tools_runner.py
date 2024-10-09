@@ -13,23 +13,25 @@ from core.connectors.trufflehog import Trufflehog
 def load_json(name, connector: str, connector_type: str = 'single') -> dict:
     json_data = {}
     if connector_type == 'single':
-        file = open(name, 'r')
         try:
+            file = open(name, 'r')
             json_data = json.load(file)
-        except Exception as err:
-            print(f"Unable to load result for {connector}")
-            print(err)
-        file.close()
+            file.close()
+        except FileNotFoundError:
+            print(f"No results found for {connector}")
     else:
-        file = open(name, 'r')
-        json_data = {"Issues": []}
-        for line in file.readlines():
-            try:
-                entry = json.loads(line)
-                json_data['Issues'].append(entry)
-            except Exception as error:
-                print(f"Unable to load entry {line} for {connector}")
-                print(error)
+        try:
+            file = open(name, 'r')
+            json_data = {"Issues": []}
+            for line in file.readlines():
+                try:
+                    entry = json.loads(line)
+                    json_data['Issues'].append(entry)
+                except Exception as error:
+                    print(f"Unable to load entry {line} for {connector}")
+                    print(error)
+        except FileNotFoundError:
+            print(f"No results found for {connector}")
     return json_data
 
 

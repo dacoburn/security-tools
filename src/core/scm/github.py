@@ -1,7 +1,7 @@
 import json
 import os
 from github import Github, Repository, PullRequest, IssueComment
-from src.core import log
+from core import log
 
 
 repo: Repository
@@ -13,7 +13,7 @@ event_path = os.getenv("GITHUB_EVENT_PATH")
 with open(event_path, 'r') as f:
     event_data = json.load(f)
 # Extract the pull request number from the event data
-pr_number = event_data["number"] if "pull_request" in event_data else None
+pr_number = event_data["pull_request"]["number"] if "pull_request" in event_data else None
 if pr_number is None:
     log.warn("Unable to get PR number from event data, assuming not a PR")
     exit(0)
@@ -88,4 +88,5 @@ class Github:
             else:
                 pull_request.create_issue_comment(comment_body)
         else:
-            existing_comment.delete()
+            if existing_comment is not None:
+                existing_comment.delete()

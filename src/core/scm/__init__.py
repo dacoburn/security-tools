@@ -1,4 +1,4 @@
-from src.core.scm.github import Github
+from core.scm.github import Github
 
 
 class SCM:

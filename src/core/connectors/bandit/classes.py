@@ -1,5 +1,5 @@
 import json
-from src.core import base_github
+from core import base_github
 
 
 class BanditTestResult:
