@@ -1,0 +1,2 @@
+mdutils~=1.6.0
+PyGithub~=2.4.0
