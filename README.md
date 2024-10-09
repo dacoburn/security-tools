@@ -9,7 +9,7 @@ name: Security Scan Workflow
 
 on:
   pull_request:
-    [opened, synchronize]
+    types: [opened, synchronize]
 
 jobs:
   security-scan:
@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Run Security Scan and Comment Action
-        uses: dacoburn/security-tools@v1.0.1
+        uses: dacoburn/security-tools@1.0.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           trufflehog_exclude_dir: "node_modules/*,vendor,.git/*"
