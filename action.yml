@@ -16,7 +16,7 @@ inputs:
     required: false
     default: ""
   trufflehog_rules:
-    description: "Rules to enable/disable in Trufflehog"
+    description: "Rules to enable in Trufflehog"
     required: false
     default: ""
 
@@ -26,7 +26,7 @@ inputs:
     required: false
     default: ""
   bandit_rules:
-    description: "Rules to enable/disable in Bandit"
+    description: "Rules to disable in Bandit"
     required: false
     default: ""
 
@@ -36,7 +36,7 @@ inputs:
     required: false
     default: ""
   gosec_rules:
-    description: "Rules to enable/disable in Gosec"
+    description: "Rules to enable in Gosec"
     required: false
     default: ""
 
@@ -46,7 +46,7 @@ inputs:
     required: false
     default: ""
   trivy_rules:
-    description: "Rules to enable/disable in Trivy"
+    description: "Rules to enable in Trivy"
     required: false
     default: ""
 
