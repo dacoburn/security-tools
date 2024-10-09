@@ -50,9 +50,6 @@ inputs:
     required: false
     default: ""
 
-permissions:
-  pull-requests: write
-
 branding:
   icon: "shield"
   color: "blue"
