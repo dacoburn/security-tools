@@ -62,3 +62,6 @@ truffle_result = Trufflehog.create_output(
 scm.github.post_comment(tool_bandit_name, bandit_marker, bandit_result)
 scm.github.post_comment(tool_gosec_name, gosec_marker, gosec_result)
 scm.github.post_comment(tool_trufflehog_name, trufflehog_marker, truffle_result)
+if bandit_result is not None or gosec_result is not None or truffle_result is not None:
+    print("Issues detected with Security Tools. Please check PR comments")
+    exit(1)
