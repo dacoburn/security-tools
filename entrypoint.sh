@@ -66,5 +66,6 @@ trufflehog_cmd+=" --no-verification -j $GITHUB_WORKSPACE > /tmp/trufflehog_outpu
 eval $trufflehog_cmd || :
 
 # Execute the custom Python script to process findings
+cd /
 mv /tmp/*.json .
 python socket_external_tools_runner.py
