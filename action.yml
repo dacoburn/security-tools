@@ -1,0 +1,59 @@
+name: "Security Scan and Comment Action"
+description: "Runs various open source security tools and then comments on PRs with results."
+author: "Douglas Coburn"
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  
+inputs:
+  github_token:
+    description: "GitHub token to post comments on PRs"
+    required: true
+
+  # Trufflehog Configuration
+  trufflehog_exclude_dir:
+    description: "Comma-separated list of directories to exclude in Trufflehog"
+    required: false
+    default: ""
+  trufflehog_rules:
+    description: "Rules to enable/disable in Trufflehog"
+    required: false
+    default: ""
+
+  # Bandit Configuration
+  bandit_exclude_dir:
+    description: "Comma-separated list of directories to exclude in Bandit"
+    required: false
+    default: ""
+  bandit_rules:
+    description: "Rules to enable/disable in Bandit"
+    required: false
+    default: ""
+
+  # Gosec Configuration
+  gosec_exclude_dir:
+    description: "Comma-separated list of directories to exclude in Gosec"
+    required: false
+    default: ""
+  gosec_rules:
+    description: "Rules to enable/disable in Gosec"
+    required: false
+    default: ""
+
+  # Trivy Configuration
+  trivy_exclude_dir:
+    description: "Comma-separated list of directories to exclude in Trivy"
+    required: false
+    default: ""
+  trivy_rules:
+    description: "Rules to enable/disable in Trivy"
+    required: false
+    default: ""
+
+permissions:
+  pull-requests: write
+
+branding:
+  icon: "shield"
+  color: "blue"
+

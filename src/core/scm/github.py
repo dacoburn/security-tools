@@ -18,7 +18,7 @@ if pr_number is None:
     log.warn("Unable to get PR number from event data, assuming not a PR")
     exit(0)
 commit_sha = os.getenv("GITHUB_SHA")
-gh_api_token = os.getenv("GH_API_TOKEN")
+gh_api_token = os.getenv("GH_API_TOKEN") or os.getenv("GITHUB_TOKEN")
 working_directory = os.getenv("GITHUB_WORKSPACE")
 
 if working_directory is None:
