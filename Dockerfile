@@ -13,7 +13,7 @@ RUN rm -rf /usr/local/go && tar -C /usr/local -xzf go1.23.2.linux-amd64.tar.gz
 # Install system dependencies and Gosec
 RUN apt-get update && \
     apt-get install -y curl git wget
-RUN curl -sfL https://raw.githubusercontent.com/securego/gosec/master/install.sh  | sh -s v2.21.4
+RUN curl -sfL https://raw.githubusercontent.com/securego/gosec/master/install.sh  | sh -s -- -b /usr/local/bin v2.21.4
 
 # Install Trivy
 RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.18.3
