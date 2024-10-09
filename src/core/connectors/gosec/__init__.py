@@ -1,4 +1,4 @@
-from src.core.connectors.gosec.classes import GosecTestResult
+from core.connectors.gosec.classes import GosecTestResult
 from mdutils import MdUtils
 from typing import Union
 
@@ -14,21 +14,22 @@ class Gosec:
             "output": [],
             # "code": []
         }
-        for test in results:
-            test_result = GosecTestResult(**test, cwd=cwd)
-            tests.append(test_result)
-            test_name = f"{test_result.rule_id}_{test_result.severity}"
-            if test_result.severity not in metrics["severities"]:
-                metrics["severities"][test_result.severity] = 1
-            else:
-                metrics["severities"][test_result.severity] += 1
+        if results is not None and len(results) > 0:
+            for test in results:
+                test_result = GosecTestResult(**test, cwd=cwd)
+                tests.append(test_result)
+                test_name = f"{test_result.rule_id}_{test_result.severity}"
+                if test_result.severity not in metrics["severities"]:
+                    metrics["severities"][test_result.severity] = 1
+                else:
+                    metrics["severities"][test_result.severity] += 1
 
-            if test_name not in metrics["tests"]:
-                metrics["tests"][test_name] = 1
-            else:
-                metrics["tests"][test_name] += 1
-            metrics["output"].append(test_result)
-            # metrics["code"].append(test_result.code)
+                if test_name not in metrics["tests"]:
+                    metrics["tests"][test_name] = 1
+                else:
+                    metrics["tests"][test_name] += 1
+                metrics["output"].append(test_result)
+                # metrics["code"].append(test_result.code)
 
         return metrics
 
@@ -47,7 +48,7 @@ class Gosec:
                     file = output.url.replace("REPO_REPLACE", repo).replace("COMMIT_REPLACE", commit)
                     file_name = f"[{output.file}]({file})"
                 else:
-                    file_name = output.file
+                    file_name = f"`{output.file}`"
                 md.new_line(f"**{output.details}**")
                 md.new_line(f"**Severity**: `{output.severity}`")
                 md.new_line(f"**Filename:** {file_name}")
