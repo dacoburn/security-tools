@@ -31,6 +31,8 @@ fi
 if [[ -n "$GOSEC_RULES" ]]; then
   gosec_cmd+=" -severity=$GOSEC_RULES"
 fi
+go mod tidy
+go mod download
 eval $gosec_cmd
 
 # Run Trivy with exclusion directories and rules if specified
@@ -45,8 +47,12 @@ eval $trivy_cmd
 
 # Run Trufflehog with exclusion directories and rules if specified
 trufflehog_cmd="trufflehog filesystem --json . > /tmp/trufflehog_output.json"
+TRUFFLEHOG_EXCLUDE_FILE=$(mktemp)
 if [[ -n "$TRUFFLEHOG_EXCLUDE_DIR" ]]; then
-  trufflehog_cmd+=" --exclude_dirs $TRUFFLEHOG_EXCLUDE_DIR"
+  IFS=',' read -ra EXCLUDE_DIRS <<< "$TRUFFLEHOG_EXCLUDE_DIR"
+  for dir in "${EXCLUDE_DIRS[@]}"; do
+    echo "$dir" >> "$TRUFFLEHOG_EXCLUDE_FILE"
+  done
 fi
 if [[ -n "$TRUFFLEHOG_RULES" ]]; then
   trufflehog_cmd+=" --rules $TRUFFLEHOG_RULES"
