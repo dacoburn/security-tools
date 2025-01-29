@@ -31,4 +31,6 @@ jobs:
           gosec_exclude_dir: "tests,migrations,tests,test,.venv,venv"
           trivy_rules: ""
           trivy_exclude_dir: "/path/to/ignore"
+          sumo_logic_enabled: true
+          sumo_logic_http_source_url: https://example/url
 ```

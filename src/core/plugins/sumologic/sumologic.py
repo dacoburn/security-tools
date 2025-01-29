@@ -1,12 +1,9 @@
 import requests
-# import json
-import base64
 import io
-# from datetime import datetime
 
 
 class Sumologic:
-    def __init__(self, access_id: str, access_key: str, http_source_url: str):
+    def __init__(self, http_source_url: str):
         """
         Initializes the Sumo Logic client with credentials and HTTP source URL.
 
@@ -14,19 +11,7 @@ class Sumologic:
         :param access_key: The Sumo Logic Access Key
         :param http_source_url: The Sumo Logic HTTP source URL
         """
-        self.access_id = access_id
-        self.access_key = access_key
         self.http_source_url = http_source_url
-        self.auth_header = self._generate_auth_header()
-
-    def _generate_auth_header(self) -> str:
-        """
-        Generates the base64-encoded Authorization header for Sumo Logic.
-
-        :return: A string representing the Authorization header value
-        """
-        auth = f"{self.access_id}:{self.access_key}"
-        return f"Basic {base64.b64encode(auth.encode()).decode()}"
 
     def send_events(self, events: list, plugin_name: str) -> dict:
         """

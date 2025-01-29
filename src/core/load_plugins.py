@@ -13,12 +13,10 @@ def load_sumo_logic_plugin():
         print("Sumo Logic integration is disabled.")
         return None
 
-    sumo_logic_access_id = os.getenv("SUMO_LOGIC_ACCESS_ID")
-    sumo_logic_access_key = os.getenv("SUMO_LOGIC_ACCESS_KEY")
-    sumo_logic_http_source_url = os.getenv("SUMO_LOGIC_HTTP_SOURCE_URL")
+    sumo_logic_http_source_url = os.getenv("INPUT_SUMO_LOGIC_HTTP_SOURCE_URL")
 
-    if not all([sumo_logic_access_id, sumo_logic_access_key, sumo_logic_http_source_url]):
+    if not all([sumo_logic_http_source_url]):
         print("Sumo Logic environment variables are not properly configured!")
         return None
 
-    return Sumologic(sumo_logic_access_id, sumo_logic_access_key, sumo_logic_http_source_url)
+    return Sumologic(sumo_logic_http_source_url)
