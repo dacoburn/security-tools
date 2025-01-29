@@ -1,5 +1,6 @@
 import json
 from core import base_github
+from datetime import datetime, timezone
 
 
 class BanditTestResult:
@@ -18,6 +19,8 @@ class BanditTestResult:
     test_name: str
     url: str
     cwd: str
+    timestamp: str
+    plugin_name: str
 
     def __init__(self, **kwargs):
         if kwargs:
@@ -33,6 +36,7 @@ class BanditTestResult:
         self.filename = self.filename.lstrip("./").lstrip("/")
         if hasattr(self, 'filename') and hasattr(self, 'line_number'):
             self.url = f"{base_github}/REPO_REPLACE/blob/COMMIT_REPLACE/{self.filename}#{self.line_number}"
+        self.timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + " +0000"
 
     def __str__(self):
         return json.dumps(self.__dict__)

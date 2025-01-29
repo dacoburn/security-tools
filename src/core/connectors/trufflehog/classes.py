@@ -1,5 +1,6 @@
 import json
 from core import base_github
+from datetime import datetime, timezone
 
 
 class TrufflehogTestResult:
@@ -19,6 +20,8 @@ class TrufflehogTestResult:
     file: str
     line: int
     cwd: str
+    timestamp: str
+    plugin_name: str
 
     def __init__(self, **kwargs):
         if kwargs:
@@ -26,6 +29,7 @@ class TrufflehogTestResult:
                 setattr(self, key, val)
         if hasattr(self, 'file') and hasattr(self, 'cwd'):
             self.file = self.file.replace(self.cwd, '')
+        self.timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + " +0000"
 
     def __str__(self):
         return json.dumps(self.__dict__)

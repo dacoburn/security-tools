@@ -1,3 +1,5 @@
+import json
+
 from core.connectors.trufflehog.classes import TrufflehogTestResult
 from mdutils import MdUtils
 from typing import Union
@@ -5,18 +7,20 @@ from typing import Union
 
 class Trufflehog:
     @staticmethod
-    def process_output(data: dict, cwd: str) -> dict:
+    def process_output(data: dict, cwd: str, plugin_name: str = "") -> dict:
         results = data.get("Issues")
         tests = []
         metrics = {
             "tests": {},
             "severities": {},
             "output": [],
+            "events": []
             # "code": []
         }
         if results is not None and len(results) > 0:
             for test in results:
                 test_result = TrufflehogTestResult(**test, cwd=cwd)
+                test_result.plugin_name = plugin_name
                 metadata = test_result.SourceMetadata.get('Data')
                 if metadata is not None:
                     test_result.file = metadata['Filesystem']['file'].lstrip("./").lstrip("/")
@@ -31,11 +35,12 @@ class Trufflehog:
                     metrics["tests"][test_name] += 1
                 tests.append(test_result)
                 metrics["output"].append(test_result)
+                metrics["events"].append(json.dumps(test_result.__dict__))
                 # metrics["code"].append(test_result.code)
         return metrics
 
     @staticmethod
-    def create_output(data: dict, marker: str, repo: str, commit: str, cwd: str) -> Union[str, None]:
+    def create_output(data: dict, marker: str, repo: str, commit: str, cwd: str) -> (Union[str, None], dict):
         trufflehog_result = Trufflehog.process_output(data, cwd=cwd)
         md = MdUtils(file_name="secrets_trufflehog_comments.md")
         output_str = None
@@ -58,4 +63,4 @@ class Trufflehog:
                 md.new_line()
             md.create_md_file()
             output_str = md.file_data_text.lstrip()
-        return output_str
+        return output_str, trufflehog_result

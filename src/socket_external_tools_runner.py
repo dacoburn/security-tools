@@ -8,6 +8,15 @@ from core.scm import SCM
 from core.connectors.bandit import Bandit
 from core.connectors.gosec import Gosec
 from core.connectors.trufflehog import Trufflehog
+from core.load_plugins import load_sumo_logic_plugin
+import os
+
+
+SCM_DISABLED = os.getenv("SOCKET_SCM_DISABLED", "false").lower() == "true"
+GIT_DIR = os.getenv("GITHUB_REPOSITORY", None)
+if not GIT_DIR and SCM_DISABLED:
+    print("GIT_DIR is not set and is required if SCM_DISABLED=true")
+    exit(1)
 
 
 def load_json(name, connector: str, connector_type: str = 'single') -> dict:
@@ -35,7 +44,8 @@ def load_json(name, connector: str, connector_type: str = 'single') -> dict:
     return json_data
 
 
-scm = SCM()
+sumo_client = load_sumo_logic_plugin()
+
 tool_bandit_name = "Bandit"
 tool_gosec_name = "Gosec"
 tool_trufflehog_name = "Trufflehog"
@@ -46,22 +56,52 @@ bandit_data = load_json(bandit_name, 'bandit')
 gosec_data = load_json(gosec_name, 'gosec')
 truffle_data = load_json(trufflehog_name, 'truffle', 'multi')
 
-bandit_marker = marker.replace("REPLACE_ME", tool_bandit_name)
-bandit_result = Bandit.create_output(bandit_data, bandit_marker, scm.github.repo, scm.github.commit, scm.github.cwd)
-gosec_marker = marker.replace("REPLACE_ME", tool_gosec_name)
-gosec_result = Gosec.create_output(gosec_data, gosec_marker, scm.github.repo, scm.github.commit, scm.github.cwd)
-trufflehog_marker = marker.replace("REPLACE_ME", tool_trufflehog_name)
-truffle_result = Trufflehog.create_output(
-    truffle_data,
-    trufflehog_marker,
-    scm.github.repo,
-    scm.github.commit,
-    scm.github.cwd
-)
 
-scm.github.post_comment(tool_bandit_name, bandit_marker, bandit_result)
-scm.github.post_comment(tool_gosec_name, gosec_marker, gosec_result)
-scm.github.post_comment(tool_trufflehog_name, trufflehog_marker, truffle_result)
-if bandit_result is not None or gosec_result is not None or truffle_result is not None:
-    print("Issues detected with Security Tools. Please check PR comments")
+if bandit_data or gosec_data or truffle_data:
+    if not SCM_DISABLED:
+        scm = SCM()
+        bandit_marker = marker.replace("REPLACE_ME", tool_bandit_name)
+        bandit_output, bandit_result = Bandit.create_output(
+            bandit_data,
+            bandit_marker,
+            scm.github.repo,
+            scm.github.commit,
+            scm.github.cwd
+        )
+        gosec_marker = marker.replace("REPLACE_ME", tool_gosec_name)
+        gosec_result = Gosec.create_output(
+            gosec_data,
+            gosec_marker,
+            scm.github.repo,
+            scm.github.commit,
+            scm.github.cwd
+        )
+        trufflehog_marker = marker.replace("REPLACE_ME", tool_trufflehog_name)
+        truffle_output, truffle_result = Trufflehog.create_output(
+            truffle_data,
+            trufflehog_marker,
+            scm.github.repo,
+            scm.github.commit,
+            scm.github.cwd
+        )
+        scm.github.post_comment(tool_bandit_name, bandit_marker, bandit_result)
+        scm.github.post_comment(tool_gosec_name, gosec_marker, gosec_result)
+        scm.github.post_comment(tool_trufflehog_name, trufflehog_marker, truffle_output)
+
+        bandit_events = bandit_result.get("events", [])
+        gosec_events = gosec_result.get("events", [])
+        truffle_events = truffle_result.get("events", [])
+        print("Issues detected with Security Tools. Please check PR comments")
+    else:
+        bandit_events = Bandit.process_output(bandit_data, GIT_DIR, bandit_name)
+        gosec_events = Gosec.process_output(gosec_data, GIT_DIR, gosec_name)
+        truffle_events = Trufflehog.process_output(truffle_data, GIT_DIR, trufflehog_name)
+
+    if sumo_client:
+        print("Issues detected with Security Tools. Please check Sumologic Events")
+        print(errors) if (errors := sumo_client.send_events(bandit_events.get("events"), bandit_name)) else []
+        print(errors) if (errors := sumo_client.send_events(gosec_events.get("events"), gosec_name)) else []
+        print(errors) if (errors := sumo_client.send_events(truffle_events.get("events"), trufflehog_name)) else []
     exit(1)
+else:
+    print("No issues detected with Socket Security Tools")

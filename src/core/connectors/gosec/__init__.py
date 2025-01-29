@@ -1,22 +1,25 @@
 from core.connectors.gosec.classes import GosecTestResult
 from mdutils import MdUtils
 from typing import Union
+import json
 
 
 class Gosec:
     @staticmethod
-    def process_output(data: dict, cwd: str) -> dict:
+    def process_output(data: dict, cwd: str, plugin_name: str = None) -> dict:
         results = data.get("Issues")
         tests = []
         metrics = {
             "tests": {},
             "severities": {},
             "output": [],
+            "events": []
             # "code": []
         }
         if results is not None and len(results) > 0:
             for test in results:
                 test_result = GosecTestResult(**test, cwd=cwd)
+                test_result.plugin_name = plugin_name
                 tests.append(test_result)
                 test_name = f"{test_result.rule_id}_{test_result.severity}"
                 if test_result.severity not in metrics["severities"]:
@@ -29,12 +32,13 @@ class Gosec:
                 else:
                     metrics["tests"][test_name] += 1
                 metrics["output"].append(test_result)
+                metrics["events"].append(json.dumps(test_result.__dict__))
                 # metrics["code"].append(test_result.code)
 
         return metrics
 
     @staticmethod
-    def create_output(data: dict, marker: str, repo: str, commit: str, cwd: str) -> Union[str, None]:
+    def create_output(data: dict, marker: str, repo: str, commit: str, cwd: str) -> (Union[str, None], dict):
         gosec_result = Gosec.process_output(data, cwd=cwd) # nosec
         output_str = None
         md = MdUtils(file_name="sast_gosec_comments.md")
@@ -57,4 +61,4 @@ class Gosec:
                 md.new_line()
             md.create_md_file()
             output_str = md.file_data_text.lstrip()
-        return output_str
+        return output_str, gosec_result
