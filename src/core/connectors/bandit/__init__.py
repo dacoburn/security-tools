@@ -61,3 +61,24 @@ class Bandit:
             md.create_md_file()
             output_str = md.file_data_text.lstrip()
         return output_str, bandit_result
+
+    @staticmethod
+    def transform_bandit_event(event):
+        """Transforms a Bandit security event into the correct Sentinel schema."""
+        return {
+            "TimeGenerated": datetime.utcnow().isoformat(),
+            "SourceComputerId": event.get("cwd", "Unknown"),
+            "OperationStatus": event.get("issue_severity", "Unknown"),
+            "Detail": event.get("issue_text", "Unknown"),
+            "OperationCategory": event.get("test_name", "Static Analysis"),
+            "Solution": event.get("more_info", "No remediation guide available"),
+            "Message": event.get("issue_text", "Unknown issue"),
+            "FilePath": event.get("filename", "Unknown"),
+            "URL": event.get("url", "N/A"),
+            "Timestamp": event.get("timestamp", datetime.utcnow().isoformat()),
+            "Plugin": "Bandit",
+            "Severity": event.get("issue_severity", "Unknown"),
+            "TestID": event.get("test_id", "Unknown"),
+            "CWE_ID": event.get("issue_cwe", {}).get("id", "Unknown"),
+            "CWE_Link": event.get("issue_cwe", {}).get("link", "Unknown")
+        }
