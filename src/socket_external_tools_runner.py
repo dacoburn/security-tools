@@ -8,7 +8,7 @@ from core.scm import SCM
 from core.connectors.bandit import Bandit
 from core.connectors.gosec import Gosec
 from core.connectors.trufflehog import Trufflehog
-from core.load_plugins import load_sumo_logic_plugin
+from core.load_plugins import load_sumo_logic_plugin, load_ms_sentinel_plugin
 import os
 
 
@@ -17,6 +17,22 @@ GIT_DIR = os.getenv("GITHUB_REPOSITORY", None)
 if not GIT_DIR and SCM_DISABLED:
     print("GIT_DIR is not set and is required if SCM_DISABLED=true")
     exit(1)
+
+
+def format_events(events):
+    formatted_events = []
+
+    for event in events:
+        if isinstance(event, str):  # If it's a JSON string, parse it into a dictionary
+            try:
+                event = json.loads(event)  # Convert string to dictionary
+            except json.JSONDecodeError:
+                print(f"Skipping invalid event: {event}")
+                continue  # Skip invalid JSON entries
+
+        formatted_events.append(event)  # Append properly formatted event
+
+    return formatted_events
 
 
 def load_json(name, connector: str, connector_type: str = 'single') -> dict:
@@ -45,6 +61,7 @@ def load_json(name, connector: str, connector_type: str = 'single') -> dict:
 
 
 sumo_client = load_sumo_logic_plugin()
+ms_sentinel = load_ms_sentinel_plugin()
 
 tool_bandit_name = "Bandit"
 tool_gosec_name = "Gosec"
@@ -102,6 +119,17 @@ if bandit_data or gosec_data or truffle_data:
         print(errors) if (errors := sumo_client.send_events(bandit_events.get("events"), bandit_name)) else []
         print(errors) if (errors := sumo_client.send_events(gosec_events.get("events"), gosec_name)) else []
         print(errors) if (errors := sumo_client.send_events(truffle_events.get("events"), trufflehog_name)) else []
+    if ms_sentinel:
+        print("Issues detected with Security Tools. Please check Microsoft Sentinel Events")
+        ms_bandit_name = f"SocketSecurityToolsBandit"
+        ms_gosec_name = f"SocketSecurityToolsGosec"
+        ms_trufflehog_name = f"SocketSecurityToolsTrufflehog"
+        ms_bandit_events = format_events(bandit_events.get("events"))
+        ms_gosec_events = format_events(gosec_events.get("events"))
+        ms_trufflehog_events = format_events(truffle_events.get("events"))
+        print(errors) if (errors := ms_sentinel.send_events(ms_bandit_events, ms_bandit_name)) else []
+        print(errors) if (errors := ms_sentinel.send_events(ms_gosec_events, ms_gosec_name)) else []
+        print(errors) if (errors := ms_sentinel.send_events(ms_trufflehog_events, ms_trufflehog_name)) else []
     exit(1)
 else:
     print("No issues detected with Socket Security Tools")
